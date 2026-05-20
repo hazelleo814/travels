@@ -9,7 +9,7 @@
 
   const idx = TRIPS.findIndex(t => t.id === TRIP_ID);
 
-  document.title = `${TRIP.title} ${TRIP.date} — 我们的旅行时光`;
+  document.title = `${TRIP.title} ${TRIP.date} — Hazel & Leo 的旅行时光`;
   document.getElementById('nav-trip-name').textContent = `${TRIP.title} · ${TRIP.date}`;
   document.getElementById('hero-bg').style.background = TRIP.gradient;
   document.getElementById('hero-content').innerHTML = buildHero(TRIP);
