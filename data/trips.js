@@ -78,6 +78,29 @@ const TRIPS = [
   },
 
   {
+    id:          "yunnan-2025-08",
+    title:       "Yunnan",
+    titleZh:     "云南",
+    date:        "2025.08",
+    dateSort:    "2025-08-15",
+    dateRange:   "2025年8月15日 — 21日",
+    location:    "中国云南",
+    duration:    "7天6晚",
+    description: "苍山洱海，云端之上的人间烟火",
+    gradient:    "linear-gradient(145deg, #0d2318 0%, #1a3d28 45%, #2a3510 100%)",
+    coverPhoto:  "trips/yunnan-2025-08/photos/cover.jpg",
+
+    weather:    "晴转多云，22°C",
+    story:      "无人机飞过洱海上空的那一刻，夕阳把水面染成了金橙色，连远处的苍山也变得温柔起来。云南的美是那种铺天盖地的，随便停下来，都是一张照片。我们在大理古城的小巷里迷路，又在玉龙雪山的风里找回彼此。",
+    highlights: ["洱海无人机航拍", "大理古城漫步", "玉龙雪山"],
+    tags:       ["自然", "航拍", "古城", "雪山"],
+
+    photos: [
+      { src: "./photos/cover.jpg", caption: "洱海暮色" },
+    ],
+  },
+
+  {
     id:          "santorini-2025-05",
     title:       "Santorini",
     titleZh:     "圣托里尼",

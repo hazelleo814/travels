@@ -64,8 +64,12 @@
     el.className = 'trip-card';
     el.dataset.index = i;
 
+    const bgStyle = trip.coverPhoto
+      ? `background-image: url('${trip.coverPhoto}'); background-size: cover; background-position: center;`
+      : `background: ${trip.gradient};`;
+
     el.innerHTML = `
-      <div class="card-bg" style="background: ${trip.gradient};"></div>
+      <div class="card-bg" style="${bgStyle}"></div>
       <div class="card-overlay"></div>
       <div class="card-body">
         <div class="card-meta-row">

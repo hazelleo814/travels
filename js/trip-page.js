@@ -11,7 +11,14 @@
 
   document.title = `${TRIP.title} ${TRIP.date} — Hazel & Leo 的旅行时光`;
   document.getElementById('nav-trip-name').textContent = `${TRIP.title} · ${TRIP.date}`;
-  document.getElementById('hero-bg').style.background = TRIP.gradient;
+  const heroBg = document.getElementById('hero-bg');
+  if (TRIP.coverPhoto) {
+    heroBg.style.backgroundImage = `url('../../${TRIP.coverPhoto}')`;
+    heroBg.style.backgroundSize = 'cover';
+    heroBg.style.backgroundPosition = 'center';
+  } else {
+    heroBg.style.background = TRIP.gradient;
+  }
   document.getElementById('hero-content').innerHTML = buildHero(TRIP);
   document.getElementById('trip-content').innerHTML  = buildContent(TRIP);
   document.getElementById('trip-footer').innerHTML   = buildFooter(TRIP, idx);
