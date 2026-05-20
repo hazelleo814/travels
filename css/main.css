@@ -1,0 +1,365 @@
+/* =============================================
+   主页样式 — Cover Flow 旅行时间轴（明亮主题）
+   ============================================= */
+
+:root {
+  --bg:               #f7f4ef;
+  --text-primary:     #1e1a15;
+  --text-dim:         rgba(30, 26, 21, 0.62);
+  --text-faint:       rgba(30, 26, 21, 0.32);
+  --accent:           #b06e2d;
+  --accent-dim:       rgba(176, 110, 45, 0.14);
+  /* 卡片是深色渐变，边框保持浅色 */
+  --card-border:      rgba(255, 255, 255, 0.14);
+  --card-border-active: rgba(255, 255, 255, 0.40);
+  --ease-main:        cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html, body {
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  background: var(--bg);
+  color: var(--text-primary);
+  font-family: 'Noto Sans SC', 'PingFang SC', 'Microsoft YaHei', sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ---- 背景晕染 ---- */
+/* 把各旅行的深色渐变提亮，透过奶油色遮罩变成柔和的彩色光晕 */
+.bg-stage {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  overflow: hidden;
+}
+
+.bg-layer {
+  position: absolute;
+  inset: -12%;
+  background-size: cover;
+  background-position: center;
+  /* 高亮度：把深色渐变变成柔和亮色 */
+  filter: blur(100px) brightness(2.8) saturate(1.1);
+  transition: opacity 1.3s ease;
+}
+
+#bg-a { opacity: 1; }
+#bg-b { opacity: 0; }
+
+/* 奶油色半透明遮罩：覆在光晕上，营造浅色底 + 彩色微晕效果 */
+.bg-vignette {
+  position: absolute;
+  inset: 0;
+  background: rgba(247, 244, 239, 0.70);
+}
+
+/* ---- 顶部标题 ---- */
+.site-header {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 200;
+  padding: 36px 56px 44px;
+  text-align: center;
+  background: linear-gradient(to bottom, rgba(247, 244, 239, 0.96) 0%, transparent 100%);
+  pointer-events: none;
+  animation: fadeIn 0.8s ease both;
+}
+
+.site-title {
+  font-family: 'Playfair Display', Georgia, serif;
+  font-size: clamp(18px, 2.2vw, 24px);
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  color: var(--text-primary);
+  margin-bottom: 7px;
+}
+
+.site-subtitle {
+  font-size: 11px;
+  letter-spacing: 0.24em;
+  color: var(--text-faint);
+  font-weight: 300;
+}
+
+/* ---- 时间轴舞台 ---- */
+.timeline-stage {
+  position: fixed;
+  inset: 0;
+  z-index: 10;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.timeline-track {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* ---- 旅行卡片 ---- */
+.trip-card {
+  position: absolute;
+  width: min(560px, 88vw);
+  height: min(330px, 50vw);
+  border-radius: 20px;
+  overflow: hidden;
+  cursor: pointer;
+  transition:
+    transform   0.42s var(--ease-main),
+    opacity     0.42s var(--ease-main),
+    box-shadow  0.35s ease;
+  will-change: transform, opacity;
+  transform-origin: center center;
+  user-select: none;
+}
+
+/* 卡片边框 */
+.trip-card::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: 20px;
+  border: 1px solid var(--card-border);
+  pointer-events: none;
+  z-index: 4;
+  transition: border-color 0.4s ease;
+}
+
+.trip-card.active {
+  box-shadow:
+    0 32px 90px rgba(0, 0, 0, 0.28),
+    0 8px  32px rgba(0, 0, 0, 0.14);
+}
+
+.trip-card.active::after {
+  border-color: var(--card-border-active);
+}
+
+/* 卡片背景渐变（保持深色，与浅色页面形成对比） */
+.card-bg {
+  position: absolute;
+  inset: 0;
+  background-size: cover;
+  background-position: center;
+  transition: transform 0.9s ease;
+}
+
+.trip-card.active:hover .card-bg {
+  transform: scale(1.04);
+}
+
+/* 底部渐变遮罩（卡片内部，保持不变） */
+.card-overlay {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  background: linear-gradient(
+    to bottom,
+    transparent 20%,
+    rgba(0, 0, 0, 0.15) 50%,
+    rgba(0, 0, 0, 0.70) 100%
+  );
+}
+
+/* 卡片文字（在深色卡片上，保持白色） */
+.card-body {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  padding: 22px 28px 26px;
+  z-index: 2;
+}
+
+.card-meta-row {
+  display: flex;
+  align-items: baseline;
+  gap: 14px;
+  margin-bottom: 5px;
+}
+
+.card-date {
+  font-size: 11px;
+  letter-spacing: 0.24em;
+  color: rgba(255, 210, 140, 0.9);   /* 卡片上的金色日期 */
+  font-weight: 400;
+  text-transform: uppercase;
+}
+
+.card-country {
+  font-size: 11px;
+  letter-spacing: 0.1em;
+  color: rgba(255, 255, 255, 0.40);
+  font-weight: 300;
+}
+
+.card-city {
+  font-family: 'Playfair Display', Georgia, serif;
+  font-size: clamp(28px, 5vw, 44px);
+  font-weight: 600;
+  line-height: 1.05;
+  letter-spacing: 0.02em;
+  color: #fff;
+  margin-bottom: 7px;
+}
+
+.card-desc {
+  font-size: clamp(12px, 1.4vw, 13px);
+  color: rgba(255, 255, 255, 0.58);
+  font-weight: 300;
+  letter-spacing: 0.05em;
+  line-height: 1.6;
+}
+
+/* "进入旅行" hover 提示 */
+.card-enter-hint {
+  position: absolute;
+  top: 20px;
+  right: 22px;
+  z-index: 3;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  pointer-events: none;
+}
+
+.trip-card.active:hover .card-enter-hint {
+  opacity: 1;
+}
+
+.enter-label {
+  font-size: 11px;
+  letter-spacing: 0.16em;
+  color: rgba(255, 210, 140, 0.9);
+}
+
+.enter-circle {
+  width: 32px;
+  height: 32px;
+  border: 1px solid rgba(255, 210, 140, 0.5);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+  color: rgba(255, 210, 140, 0.9);
+}
+
+/* ---- 右侧导航点（深色，在浅色页面上） ---- */
+.nav-rail {
+  position: fixed;
+  right: 28px;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 200;
+}
+
+.nav-dots {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 9px;
+}
+
+.nav-dot {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: rgba(30, 26, 21, 0.20);
+  cursor: pointer;
+  transition: all 0.32s ease;
+  border: none;
+  padding: 0;
+}
+
+.nav-dot:hover {
+  background: rgba(30, 26, 21, 0.45);
+}
+
+.nav-dot.active {
+  background: var(--accent);
+  transform: scale(1.7);
+}
+
+/* ---- 左下角计数 ---- */
+.trip-count {
+  position: fixed;
+  left: 36px;
+  bottom: 30px;
+  z-index: 200;
+  display: flex;
+  align-items: baseline;
+  gap: 2px;
+  font-size: 12px;
+  letter-spacing: 0.1em;
+  color: var(--text-faint);
+}
+
+.count-num {
+  font-family: 'Playfair Display', serif;
+  font-size: 20px;
+  color: var(--text-dim);
+}
+
+.count-total {
+  font-size: 14px;
+  color: var(--text-faint);
+}
+
+/* ---- 滚动提示 ---- */
+.scroll-hint {
+  position: fixed;
+  bottom: 30px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 200;
+  text-align: center;
+  pointer-events: none;
+  opacity: 1;
+  transition: opacity 0.9s ease;
+}
+
+.scroll-hint.hidden {
+  opacity: 0;
+}
+
+.hint-text {
+  font-size: 10px;
+  letter-spacing: 0.28em;
+  color: var(--text-faint);
+  text-transform: uppercase;
+  margin-bottom: 9px;
+}
+
+.hint-icon {
+  font-size: 19px;
+  color: var(--text-faint);
+  animation: float 2.6s ease-in-out infinite;
+  display: block;
+}
+
+/* ---- 动画 ---- */
+@keyframes float {
+  0%, 100% { transform: translateY(0);   opacity: 0.35; }
+  50%       { transform: translateY(7px); opacity: 0.65; }
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to   { opacity: 1; transform: translateY(0); }
+}

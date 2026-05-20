@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>我们的旅行时光</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;1,400&family=Noto+Sans+SC:wght@300;400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/main.css">
+</head>
+<body>
+
+  <!-- 背景渐变层 (两层交替淡入淡出) -->
+  <div class="bg-stage">
+    <div class="bg-layer" id="bg-a"></div>
+    <div class="bg-layer" id="bg-b"></div>
+    <div class="bg-vignette"></div>
+  </div>
+
+  <!-- 顶部标题 -->
+  <header class="site-header">
+    <h1 class="site-title">我们的旅行时光</h1>
+    <p class="site-subtitle">记录每一次出发，珍藏每一段回忆</p>
+  </header>
+
+  <!-- Cover Flow 时间轴 -->
+  <main class="timeline-stage">
+    <div class="timeline-track" id="timeline-track"></div>
+  </main>
+
+  <!-- 右侧导航点 -->
+  <div class="nav-rail">
+    <div class="nav-dots" id="nav-dots"></div>
+  </div>
+
+  <!-- 左下角计数 -->
+  <div class="trip-count">
+    <span class="count-num" id="count-current">01</span>
+    <span class="count-sep"> / </span>
+    <span class="count-num count-total" id="count-total">06</span>
+  </div>
+
+  <!-- 滚动提示 (首次显示) -->
+  <div class="scroll-hint" id="scroll-hint">
+    <div class="hint-text">滚动探索记忆</div>
+    <div class="hint-icon">↕</div>
+  </div>
+
+  <script src="data/trips.js"></script>
+  <script src="js/timeline.js"></script>
+</body>
+</html>

@@ -1,0 +1,485 @@
+/* =============================================
+   旅行详情页样式（明亮主题）
+   ============================================= */
+
+:root {
+  --bg:           #f7f4ef;
+  --text-primary: #1e1a15;
+  --text-dim:     rgba(30, 26, 21, 0.65);
+  --text-faint:   rgba(30, 26, 21, 0.32);
+  --accent:       #b06e2d;
+  --accent-dim:   rgba(176, 110, 45, 0.12);
+  --surface:      rgba(30, 26, 21, 0.04);
+  --border:       rgba(30, 26, 21, 0.10);
+  --ease:         cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  background: var(--bg);
+  color: var(--text-primary);
+  font-family: 'Noto Sans SC', 'PingFang SC', 'Microsoft YaHei', sans-serif;
+  -webkit-font-smoothing: antialiased;
+  overflow-x: hidden;
+}
+
+/* ---- 固定顶部导航 ---- */
+/* 英雄区上方：透明+白色文字；滚进内容区后：奶油色背景+深色文字 */
+.trip-nav {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 300;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 22px 44px;
+  background: transparent;
+  transition: background 0.4s ease, box-shadow 0.4s ease;
+}
+
+.trip-nav.scrolled {
+  background: rgba(247, 244, 239, 0.95);
+  backdrop-filter: blur(14px);
+  box-shadow: 0 1px 0 rgba(30, 26, 21, 0.08);
+}
+
+.back-btn {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: rgba(255, 255, 255, 0.80);   /* 英雄区白色文字 */
+  text-decoration: none;
+  font-size: 13px;
+  letter-spacing: 0.08em;
+  transition: color 0.28s ease;
+}
+
+.trip-nav.scrolled .back-btn {
+  color: var(--text-dim);            /* 内容区深色文字 */
+}
+
+.back-btn:hover {
+  color: rgba(255, 255, 255, 1);
+}
+
+.trip-nav.scrolled .back-btn:hover {
+  color: var(--accent);
+}
+
+.back-icon {
+  font-size: 18px;
+  line-height: 1;
+}
+
+.nav-trip-name {
+  font-family: 'Playfair Display', serif;
+  font-size: 15px;
+  color: rgba(255, 255, 255, 0.70);
+  letter-spacing: 0.06em;
+  opacity: 0;
+  transition: opacity 0.4s ease;
+}
+
+.trip-nav.scrolled .nav-trip-name {
+  opacity: 1;
+  color: var(--text-dim);
+}
+
+/* ---- 英雄区（保持深色渐变，与内容区明亮形成对比） ---- */
+.trip-hero {
+  position: relative;
+  height: 82vh;
+  min-height: 520px;
+  display: flex;
+  align-items: flex-end;
+  overflow: hidden;
+}
+
+.hero-bg {
+  position: absolute;
+  inset: 0;
+  background-size: cover;
+  background-position: center;
+  filter: brightness(0.78) saturate(1.2);
+  transition: transform 12s ease;
+}
+
+.trip-hero:hover .hero-bg {
+  transform: scale(1.025);
+}
+
+/* 渐变底部过渡到奶油色 */
+.hero-overlay {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    to bottom,
+    rgba(6, 6, 13, 0.18) 0%,
+    transparent 30%,
+    rgba(247, 244, 239, 0.15) 68%,
+    #f7f4ef 100%
+  );
+}
+
+.hero-content {
+  position: relative;
+  z-index: 2;
+  padding: 0 60px 64px;
+  width: 100%;
+  max-width: 1100px;
+}
+
+.hero-eyebrow {
+  font-size: 11px;
+  letter-spacing: 0.3em;
+  color: rgba(255, 210, 140, 0.9);
+  text-transform: uppercase;
+  margin-bottom: 14px;
+}
+
+.hero-title {
+  font-family: 'Playfair Display', Georgia, serif;
+  font-size: clamp(52px, 9vw, 104px);
+  font-weight: 600;
+  line-height: 1.0;
+  letter-spacing: 0.02em;
+  color: #fff;
+  margin-bottom: 8px;
+}
+
+.hero-title-zh {
+  font-size: clamp(18px, 2.4vw, 28px);
+  font-weight: 300;
+  letter-spacing: 0.2em;
+  color: rgba(255, 255, 255, 0.62);
+  margin-bottom: 22px;
+}
+
+.hero-meta {
+  display: flex;
+  align-items: center;
+  gap: 28px;
+  flex-wrap: wrap;
+}
+
+.meta-item {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 13px;
+  color: rgba(255, 255, 255, 0.65);
+  letter-spacing: 0.06em;
+}
+
+.meta-dot {
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background: rgba(255, 210, 140, 0.7);
+  flex-shrink: 0;
+}
+
+/* ---- 正文内容区（奶油色背景 + 深色文字） ---- */
+.trip-content {
+  max-width: 860px;
+  margin: 0 auto;
+  padding: 72px 44px 100px;
+}
+
+.section {
+  margin-bottom: 72px;
+}
+
+.section-label {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  font-size: 10px;
+  letter-spacing: 0.36em;
+  color: var(--accent);
+  text-transform: uppercase;
+  margin-bottom: 28px;
+}
+
+.section-label::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: rgba(176, 110, 45, 0.22);
+}
+
+/* 故事文字 */
+.story-text {
+  font-size: 16px;
+  line-height: 2.1;
+  color: var(--text-dim);
+  font-weight: 300;
+  letter-spacing: 0.04em;
+  max-width: 680px;
+}
+
+/* 旅行亮点 */
+.highlights-list {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.highlight-item {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  padding: 18px 24px;
+  background: rgba(255, 255, 255, 0.65);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  font-size: 15px;
+  color: var(--text-dim);
+  letter-spacing: 0.04em;
+  transition: border-color 0.3s ease, background 0.3s ease;
+}
+
+.highlight-item:hover {
+  border-color: rgba(176, 110, 45, 0.22);
+  background: rgba(255, 255, 255, 0.9);
+}
+
+.highlight-num {
+  font-family: 'Playfair Display', serif;
+  font-size: 13px;
+  color: var(--accent);
+  opacity: 0.75;
+  min-width: 22px;
+  flex-shrink: 0;
+}
+
+/* 照片网格 */
+.photo-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+}
+
+.photo-cell {
+  border-radius: 12px;
+  overflow: hidden;
+  aspect-ratio: 4 / 3;
+  background: rgba(255, 255, 255, 0.6);
+  border: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  color: var(--text-faint);
+  font-size: 11px;
+  letter-spacing: 0.12em;
+  cursor: pointer;
+  transition: border-color 0.3s ease, box-shadow 0.3s ease;
+  position: relative;
+}
+
+.photo-cell:hover {
+  border-color: rgba(30, 26, 21, 0.18);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+}
+
+.photo-cell.cell-large {
+  grid-column: span 2;
+  aspect-ratio: 8 / 3;
+}
+
+.photo-cell img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.photo-placeholder-icon {
+  font-size: 24px;
+  opacity: 0.25;
+}
+
+.photo-placeholder-text {
+  font-size: 10px;
+  letter-spacing: 0.15em;
+  color: var(--text-faint);
+}
+
+/* 旅行信息网格 */
+.info-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(190px, 1fr));
+  gap: 12px;
+}
+
+.info-card {
+  padding: 20px 22px;
+  background: rgba(255, 255, 255, 0.65);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  transition: box-shadow 0.3s ease;
+}
+
+.info-card:hover {
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.07);
+}
+
+.info-card-label {
+  font-size: 10px;
+  letter-spacing: 0.22em;
+  color: var(--text-faint);
+  text-transform: uppercase;
+  margin-bottom: 8px;
+}
+
+.info-card-value {
+  font-size: 15px;
+  color: var(--text-dim);
+  font-weight: 400;
+  letter-spacing: 0.04em;
+  line-height: 1.5;
+}
+
+/* 标签 */
+.tags-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.tag {
+  padding: 6px 15px;
+  background: rgba(176, 110, 45, 0.09);
+  border: 1px solid rgba(176, 110, 45, 0.22);
+  border-radius: 20px;
+  font-size: 12px;
+  color: var(--accent);
+  letter-spacing: 0.1em;
+  font-weight: 400;
+}
+
+/* ---- 底部：上一段/下一段 ---- */
+.trip-footer {
+  border-top: 1px solid var(--border);
+  max-width: 860px;
+  margin: 0 auto;
+  padding: 0 44px 80px;
+}
+
+.footer-nav {
+  display: flex;
+  justify-content: space-between;
+  align-items: stretch;
+  gap: 20px;
+  padding-top: 40px;
+}
+
+.footer-nav-btn {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  color: var(--text-faint);
+  text-decoration: none;
+  padding: 20px 24px;
+  background: rgba(255, 255, 255, 0.6);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  flex: 1;
+  transition: all 0.3s ease;
+  max-width: 45%;
+}
+
+.footer-nav-btn:hover {
+  color: var(--text-dim);
+  border-color: rgba(176, 110, 45, 0.22);
+  background: rgba(255, 255, 255, 0.9);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+}
+
+.footer-nav-btn.prev { flex-direction: row; }
+.footer-nav-btn.next { flex-direction: row-reverse; margin-left: auto; }
+
+.nav-arrow {
+  font-size: 20px;
+  color: var(--accent);
+  flex-shrink: 0;
+}
+
+.nav-btn-info {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.footer-nav-btn.next .nav-btn-info {
+  text-align: right;
+}
+
+.nav-btn-hint {
+  font-size: 10px;
+  letter-spacing: 0.2em;
+  color: var(--text-faint);
+  text-transform: uppercase;
+}
+
+.nav-btn-name {
+  font-family: 'Playfair Display', serif;
+  font-size: 17px;
+  color: var(--text-dim);
+  letter-spacing: 0.04em;
+}
+
+/* 返回时光轴 */
+.footer-home {
+  text-align: center;
+  padding-top: 50px;
+  padding-bottom: 20px;
+}
+
+.footer-home-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--text-faint);
+  text-decoration: none;
+  font-size: 12px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  transition: color 0.3s ease;
+}
+
+.footer-home-link:hover {
+  color: var(--accent);
+}
+
+/* ---- 响应式 ---- */
+@media (max-width: 640px) {
+  .hero-content { padding: 0 24px 48px; }
+  .trip-content { padding: 48px 24px 80px; }
+  .trip-footer  { padding: 0 24px 60px; }
+  .trip-nav     { padding: 18px 24px; }
+
+  .photo-grid { grid-template-columns: repeat(2, 1fr); }
+
+  .photo-cell.cell-large {
+    grid-column: span 2;
+    aspect-ratio: 4 / 3;
+  }
+
+  .footer-nav { flex-direction: column; }
+  .footer-nav-btn { max-width: 100%; }
+}
