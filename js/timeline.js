@@ -12,18 +12,14 @@
 
   let currentIndex = 0;
   let bgActive     = 'a';
-  let lastNavTime  = 0;      // 时间戳冷却，替代 isAnimating 锁
-  let scrollAccum  = 0;      // 触控板累积量
+  let lastNavTime  = 0;
+  let scrollAccum  = 0;
 
-  const COOLDOWN = 420;      // ms，与 CSS transition 保持一致
+  const COOLDOWN = 420;
 
   const cards = [];
   const dots  = [];
 
-  // ---- 卡片位置定义 (offset → 视觉参数) ----
-  // 卡片高度 min(330,50vw) → 半高 ≈ 165px
-  // y[1] ≥ 165 + 330*0.76/2 + gap = 165+125+20 = 310 → 用 325
-  // y[2] ≥ 325+125+330*0.55/2+20 = 325+125+90+20 = 560 → 用 570
   const LAYOUT = {
     0: { y: 0,    scale: 1.00, opacity: 1.00 },
     1: { y: 325,  scale: 0.76, opacity: 0.58 },
@@ -31,23 +27,102 @@
     3: { y: 740,  scale: 0.36, opacity: 0.08 },
   };
 
+  // ---- 从封面图采样并生成背景渐变 ----
+  // 采样三个区域取均色，然后压暗+微降饱和，保留色相，产生与图片有"视觉距离"的暗调渐变
+  function extractGradientFromPhoto(src, callback) {
+    const img = new Image();
+    img.onload = function () {
+      const S = 80;
+      const canvas = document.createElement('canvas');
+      canvas.width = S; canvas.height = S;
+      const ctx = canvas.getContext('2d');
+      ctx.drawImage(img, 0, 0, S, S);
+
+      // 左上、中心、右下三个区域，各取平均色
+      const zones = [
+        [0,        0,        S * 0.45, S * 0.45],
+        [S * 0.28, S * 0.28, S * 0.44, S * 0.44],
+        [S * 0.55, S * 0.55, S * 0.45, S * 0.45],
+      ];
+
+      const stops = zones.map(([x, y, w, h]) => {
+        const d = ctx.getImageData(x | 0, y | 0, w | 0, h | 0).data;
+        let r = 0, g = 0, b = 0, n = d.length / 4;
+        for (let i = 0; i < d.length; i += 4) { r += d[i]; g += d[i+1]; b += d[i+2]; }
+        return moodify(r / n, g / n, b / n);
+      });
+
+      callback(`linear-gradient(145deg, ${stops[0]} 0%, ${stops[1]} 45%, ${stops[2]} 100%)`);
+    };
+    img.onerror = function () { /* 静默失败，保留原 gradient */ };
+    img.src = src;
+  }
+
+  // 将 RGB 颜色转成暗调版本：保留色相，压暗至 25~30% 亮度，微降饱和
+  function moodify(r, g, b) {
+    r /= 255; g /= 255; b /= 255;
+    const max = Math.max(r, g, b), min = Math.min(r, g, b), d = max - min;
+    let h = 0, s = 0, l = (max + min) / 2;
+    if (d > 0) {
+      s = d / (1 - Math.abs(2 * l - 1));
+      switch (max) {
+        case r: h = ((g - b) / d + 6) % 6; break;
+        case g: h = (b - r) / d + 2;       break;
+        case b: h = (r - g) / d + 4;       break;
+      }
+      h /= 6;
+    }
+    // 核心变换：把任意亮度压到 6~22% 区间，饱和度保留八成
+    l = Math.max(0.06, l * 0.28 + 0.03);
+    s = s * 0.82;
+
+    // HSL → RGB
+    function hue2rgb(p, q, t) {
+      if (t < 0) t += 1; if (t > 1) t -= 1;
+      if (t < 1/6) return p + (q - p) * 6 * t;
+      if (t < 1/2) return q;
+      if (t < 2/3) return p + (q - p) * (2/3 - t) * 6;
+      return p;
+    }
+    let r2, g2, b2;
+    if (s === 0) {
+      r2 = g2 = b2 = l;
+    } else {
+      const q = l < 0.5 ? l * (1 + s) : l + s - l * s;
+      const p = 2 * l - q;
+      r2 = hue2rgb(p, q, h + 1/3);
+      g2 = hue2rgb(p, q, h);
+      b2 = hue2rgb(p, q, h - 1/3);
+    }
+    return `rgb(${r2 * 255 | 0},${g2 * 255 | 0},${b2 * 255 | 0})`;
+  }
+
   // ---- 初始化 ----
   function init() {
     countTotal.textContent = String(TRIPS.length).padStart(2, '0');
 
     TRIPS.forEach((trip, i) => {
-      // 创建卡片
       const card = buildCard(trip, i);
       track.appendChild(card);
       cards.push(card);
 
-      // 导航点
       const dot = document.createElement('button');
       dot.className = 'nav-dot';
       dot.title = `${trip.date} ${trip.title}`;
       dot.addEventListener('click', () => navigateTo(i));
       navDotsCtn.appendChild(dot);
       dots.push(dot);
+
+      // 有封面图时异步提取背景渐变
+      if (trip.coverPhoto) {
+        extractGradientFromPhoto(trip.coverPhoto, gradient => {
+          trip._derivedGradient = gradient;
+          // 若当前正好在这张卡片，立刻刷新背景
+          if (TRIPS[currentIndex].id === trip.id) {
+            applyBackground(false);
+          }
+        });
+      }
     });
 
     applyLayout(false);
@@ -99,7 +174,6 @@
   // ---- 应用 Cover Flow 布局 ----
   function applyLayout(animate) {
     if (!animate) {
-      // 首次渲染：关闭过渡，下一帧再打开
       cards.forEach(c => { c.style.transition = 'none'; });
     }
 
@@ -125,10 +199,7 @@
       card.classList.toggle('active', abs === 0);
     });
 
-    // 更新导航点
     dots.forEach((d, i) => d.classList.toggle('active', i === currentIndex));
-
-    // 更新计数
     countCurrent.textContent = String(currentIndex + 1).padStart(2, '0');
 
     if (!animate) {
@@ -143,18 +214,20 @@
   // ---- 切换背景渐变 ----
   function applyBackground(animate) {
     const trip = TRIPS[currentIndex];
+    // 有封面图时优先用从图中提取的渐变，否则用手写 gradient
+    const gradient = trip._derivedGradient || trip.gradient;
     const incoming = bgActive === 'a' ? bgB : bgA;
     const outgoing = bgActive === 'a' ? bgA : bgB;
 
     if (!animate) {
-      bgA.style.background = trip.gradient;
+      bgA.style.background = gradient;
       bgA.style.opacity = '1';
       bgB.style.opacity = '0';
       bgActive = 'a';
       return;
     }
 
-    incoming.style.background  = trip.gradient;
+    incoming.style.background  = gradient;
     incoming.style.transition  = 'opacity 1.3s ease';
     outgoing.style.transition  = 'opacity 1.3s ease';
     incoming.style.opacity     = '1';
@@ -188,11 +261,9 @@
     const dy = e.deltaY;
 
     if (Math.abs(dy) >= 50) {
-      // 鼠标滚轮：每格直接导航
       scrollAccum = 0;
       navigateTo(currentIndex + (dy > 0 ? 1 : -1));
     } else {
-      // 触控板：累积到阈值再触发
       scrollAccum += dy;
       if (Math.abs(scrollAccum) >= 90) {
         navigateTo(currentIndex + (scrollAccum > 0 ? 1 : -1));
