@@ -3,16 +3,16 @@
    ============================================= */
 
 :root {
-  --map-bg:         #ede8df;
-  --surface:        rgba(250, 246, 239, 0.95);
-  --surface-border: rgba(30, 20, 10, 0.09);
-  --text-primary:   #1e1a14;
-  --text-dim:       rgba(30, 26, 18, 0.58);
-  --text-faint:     rgba(30, 26, 18, 0.30);
-  --accent:         #b06e2d;
-  --accent-dim:     rgba(176, 110, 45, 0.14);
-  --pin-border:     #ffffff;
-  --pin-shadow:     rgba(0, 0, 0, 0.20);
+  --map-bg:         #efe8dc;
+  --surface:        rgba(253, 249, 243, 0.96);
+  --surface-border: rgba(30, 18, 8, 0.08);
+  --text-primary:   #2a1f14;
+  --text-dim:       rgba(42, 31, 20, 0.58);
+  --text-faint:     rgba(42, 31, 20, 0.30);
+  --accent:         #b8714e;
+  --accent-dim:     rgba(184, 113, 78, 0.14);
+  --pin-border:     #fff8f2;
+  --pin-shadow:     rgba(80, 40, 10, 0.18);
   --nav-h:          52px;
   --panel-w:        340px;
   --pin-expanded-w: 280px;
@@ -29,10 +29,10 @@ html, body {
   -webkit-font-smoothing: antialiased;
 }
 
-/* ---- 高德底图暖色化 ----
-   大幅降低饱和，加轻微暖调，使地图呈奶油纸质感 */
+/* ---- 高德底图 — 暖羊皮纸调 ----
+   sepia 偏暖，降饱和让色彩柔和，像一张旧地图或手绘日记 */
 .leaflet-tile-pane {
-  filter: saturate(0.48) brightness(1.08) sepia(0.22) hue-rotate(-6deg);
+  filter: sepia(0.38) saturate(0.52) brightness(1.10) contrast(0.88) hue-rotate(-4deg);
 }
 
 /* ---- 顶部导航 ---- */
@@ -168,7 +168,7 @@ html, body {
 }
 
 /* ================================================================
-   无照片地点：简洁圆点占位
+   去过的城市标记（无照片）
    ================================================================ */
 .city-marker {
   cursor: default;
@@ -177,17 +177,30 @@ html, body {
   align-items: center;
   animation: markerIn 0.4s var(--ease-main) both;
 }
+
 .city-dot {
-  width: 8px; height: 8px;
-  background: rgba(176, 110, 45, 0.35);
-  border: 1.5px solid var(--accent);
+  width: 11px; height: 11px;
+  background: var(--accent);
+  border: 2px solid #fff;
   border-radius: 50%;
   flex-shrink: 0;
+  box-shadow:
+    0 0 0 3px rgba(176, 110, 45, 0.25),
+    0 2px 6px rgba(0, 0, 0, 0.18);
 }
+
 .city-label {
-  font-size: 10px; color: var(--text-dim);
-  letter-spacing: 0.06em; margin-top: 4px;
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--text-primary);
+  letter-spacing: 0.05em;
+  margin-top: 5px;
   white-space: nowrap;
+  background: rgba(250, 246, 239, 0.92);
+  padding: 2px 7px;
+  border-radius: 5px;
+  box-shadow: 0 1px 5px rgba(0, 0, 0, 0.12);
+  border: 1px solid var(--surface-border);
 }
 
 /* ================================================================
@@ -308,8 +321,8 @@ html, body {
 
 .pin-expanded-text {
   padding: 10px 14px 13px;
-  font-size: 12.5px;
-  color: var(--text-dim);
+  font-size: 14px;
+  color: var(--text-primary);
   line-height: 1.75;
   letter-spacing: 0.03em;
   white-space: normal;
@@ -338,7 +351,33 @@ html, body {
 .stat-label { font-size: 10px; color: var(--text-faint); letter-spacing: 0.10em; margin-top: 2px; }
 .stat-divider { width: 1px; height: 26px; background: var(--surface-border); }
 
-/* ---- 动画 ---- */
+/* ================================================================
+   城市边界 — 发光填充层 + 流动虚线层
+   ================================================================ */
+
+/* 发光填充：模糊向外晕散，形成柔和光晕 */
+.city-boundary-glow path {
+  filter: blur(6px);
+  animation: boundaryFadeIn 1.2s ease both;
+}
+
+/* 流动虚线边框，速度放慢显得更温柔 */
+.city-boundary-line path {
+  animation:
+    boundaryFadeIn 1.2s ease both,
+    borderFlow 7s linear infinite;
+}
+
+@keyframes borderFlow {
+  to { stroke-dashoffset: -24; }
+}
+/* 边界渐入 */
+@keyframes boundaryFadeIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+/* ---- 其他动画 ---- */
 @keyframes markerIn {
   from { opacity: 0; transform: translateY(12px) scale(0.78); }
   to   { opacity: 1; transform: translateY(0)    scale(1); }

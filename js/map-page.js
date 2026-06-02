@@ -1,6 +1,50 @@
 (function () {
 
   // ============================================================
+  //  从图片提取主色调 → 转为浅色背景（用于展开卡片文字区）
+  // ============================================================
+
+  function extractCardBg(src, callback) {
+    const img = new Image();
+    img.crossOrigin = 'anonymous';
+    img.onload = function () {
+      const S = 60;
+      const canvas = document.createElement('canvas');
+      canvas.width = S; canvas.height = S;
+      const ctx = canvas.getContext('2d');
+      ctx.drawImage(img, 0, 0, S, S);
+      const d = ctx.getImageData(0, 0, S, S).data;
+      let r = 0, g = 0, b = 0, n = d.length / 4;
+      for (let i = 0; i < d.length; i += 4) {
+        r += d[i]; g += d[i + 1]; b += d[i + 2];
+      }
+      callback(toCardBg(r / n, g / n, b / n));
+    };
+    img.onerror = () => callback(null);
+    img.src = src;
+  }
+
+  // 把 RGB 均色转为极浅的同色系背景（保留色相，亮度拉到 94%，饱和度压低）
+  function toCardBg(r, g, b) {
+    r /= 255; g /= 255; b /= 255;
+    const max = Math.max(r, g, b), min = Math.min(r, g, b), d = max - min;
+    let h = 0, s = 0;
+    if (d > 0) {
+      const l = (max + min) / 2;
+      s = d / (1 - Math.abs(2 * l - 1));
+      switch (max) {
+        case r: h = ((g - b) / d + 6) % 6; break;
+        case g: h = (b - r) / d + 2;       break;
+        case b: h = (r - g) / d + 4;       break;
+      }
+      h /= 6;
+    }
+    const hDeg = Math.round(h * 360);
+    const sPct = Math.round(Math.min(s, 0.45) * 100);
+    return `hsl(${hDeg}, ${sPct}%, 94%)`;
+  }
+
+  // ============================================================
   //  坐标系转换：WGS-84（GPS）→ GCJ-02（火星坐标，高德/国标）
   //  data/locations.js 中的坐标均为 GPS 标准坐标（方便从手机/地图复制）
   //  显示到高德底图前，中国境内的点需要做此转换，否则会有 100~500m 偏移
@@ -156,6 +200,43 @@
     locs.forEach((loc, locIdx) => {
       const [baseLat, baseLng] = toMapCoord(loc.lat, loc.lng, loc.country);
 
+      // 城市区域高亮：有 adcode 用真实行政边界，否则用圆形兜底
+      if (loc.adcode) {
+        fetch(`https://geo.datav.aliyun.com/areas_v3/bound/${loc.adcode}.json`)
+          .then(r => r.json())
+          .then(geojson => {
+            // 层1：柔光填充（blur 向外晕散，陶土暖色）
+            const glowLayer = L.geoJSON(geojson, {
+              style:       { color: 'none', weight: 0, fillColor: '#c4784a', fillOpacity: 0.22 },
+              className:   'city-boundary-glow',
+              interactive: false,
+            }).addTo(map);
+
+            // 层2：流动虚线轮廓（比填充色稍深）
+            const lineLayer = L.geoJSON(geojson, {
+              style:       { color: '#b8624a', weight: 1.6, opacity: 0.60, fillOpacity: 0, dashArray: '7 4' },
+              className:   'city-boundary-line',
+              interactive: false,
+            }).addTo(map);
+
+            cityMarkerLayers.push(glowLayer, lineLayer);
+          })
+          .catch(() => {});
+      } else {
+        // 非中国城市用圆形兜底（如吉隆坡）
+        const glowCircle = L.circle([baseLat, baseLng], {
+          radius: 12000, color: 'none', weight: 0,
+          fillColor: '#c4784a', fillOpacity: 0.22,
+          interactive: false, className: 'city-boundary-glow',
+        }).addTo(map);
+        const lineCircle = L.circle([baseLat, baseLng], {
+          radius: 12000, color: '#b8624a', weight: 1.6,
+          opacity: 0.60, fillOpacity: 0, dashArray: '7 4',
+          interactive: false,
+        }).addTo(map);
+        cityMarkerLayers.push(glowCircle, lineCircle);
+      }
+
       if (!loc.photos || !loc.photos.length) {
         // 无照片：显示简单圆点占位
         const icon = L.divIcon({
@@ -201,8 +282,16 @@
         });
 
         const marker = L.marker([lat, lng], { icon }).addTo(map);
-
         cityMarkerLayers.push(marker);
+
+        // 从照片提取主色调，应用到展开卡片的文字区背景
+        extractCardBg(photo.src, (bg) => {
+          if (!bg) return;
+          const el = marker.getElement();
+          if (!el) return;
+          const textArea = el.querySelector('.pin-expanded-text');
+          if (textArea) textArea.style.background = bg;
+        });
       });
     });
   }

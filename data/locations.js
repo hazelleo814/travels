@@ -1,16 +1,9 @@
 // ============================================================
 //  位置数据 — 地图页使用
 //
-//  每个 LOCATION 是一个大的地点（城市/区域），作为所属照片的兜底坐标
-//
-//  每张照片可以有自己的精确坐标：
-//    { src: "路径", text: "一句话", lat: 25.69, lng: 100.17 }
-//  如果照片没有写 lat/lng，就用所属地点的坐标（会自动小幅偏移避免重叠）
-//
-//  坐标获取方式：
-//    - iPhone：打开地图 App，长按位置，坐标显示在底部
-//    - Google Maps：长按地图上的点，坐标显示在搜索框
-//    - 直接用手机拍摄的照片 GPS 元数据也可以
+//  adcode：中国城市的行政区划代码，用于加载真实边界轮廓
+//  查询地址：https://geo.datav.aliyun.com/areas_v3/bound/
+//  非中国城市不填 adcode，自动用圆形代替
 // ============================================================
 
 const COUNTRIES_VISITED = [
@@ -36,6 +29,7 @@ const LOCATIONS = [
     country: "malaysia",
     lat:     3.1390,
     lng:     101.6869,
+    // 非中国城市无 adcode，用圆形高亮
     photos:  [
       // { src: "photos/kl/petronas.jpg", text: "双子塔在夜晚会发光，我们站在塔下很久，什么都没说。" },
     ],
@@ -45,6 +39,7 @@ const LOCATIONS = [
     name:    "Kunming",
     nameZh:  "昆明",
     country: "china",
+    adcode:  "530100",   // 昆明市
     lat:     25.0389,
     lng:     102.7183,
     photos:  [
@@ -56,18 +51,16 @@ const LOCATIONS = [
     name:    "Dali",
     nameZh:  "大理",
     country: "china",
+    adcode:  "532900",   // 大理白族自治州
     lat:     25.6065,
     lng:     100.2679,
     photos:  [
       {
         src:  "trips/yunnan-2025-08/photos/cover.jpg",
-        text: "我们在大理古城的小巷里迷路，又在苍山的夏风里找回彼此。洱海的水是那种很安静的蓝。",
-        lat:  25.6965,   // 洱海边
+        text: "2025年8月很25日。幸运的我们在大理古城的城楼上看到日落，许下承诺还要陪伴彼此看更多的日落。",
+        lat:  25.6965,
         lng:  100.1737,
       },
-      // 没有写 lat/lng 的照片会用大理中心坐标兜底：
-      // { src: "photos/dali/oldtown.jpg", text: "古城的街道走到尽头就是苍山。" },
-      // { src: "photos/dali/cangshan.jpg", text: "苍山的雪还没化。", lat: 25.68, lng: 100.13 },
     ],
   },
   {
@@ -75,6 +68,7 @@ const LOCATIONS = [
     name:    "Guilin",
     nameZh:  "桂林",
     country: "china",
+    adcode:  "450300",   // 桂林市
     lat:     25.2736,
     lng:     110.2907,
     photos:  [
@@ -86,6 +80,7 @@ const LOCATIONS = [
     name:    "Yangshuo",
     nameZh:  "阳朔",
     country: "china",
+    adcode:  "450321",   // 阳朔县
     lat:     24.7783,
     lng:     110.4946,
     photos:  [
@@ -97,6 +92,7 @@ const LOCATIONS = [
     name:    "Guiyang",
     nameZh:  "贵阳",
     country: "china",
+    adcode:  "520100",   // 贵阳市
     lat:     26.6470,
     lng:     106.6302,
     photos:  [
