@@ -67,7 +67,7 @@ const LOCATIONS = [
         text: "我们正在喝一杯超级贵的咖啡。",
         lat:  25.6947,
         lng:  100.1608,
-      },
+      }, 
       {
         src:  "trips/yunnan-2025-08/photos/02.jpg",
         date: "2025.08.21",
