@@ -1,7 +1,7 @@
 (function () {
 
   // ============================================================
-  //  从图片提取主色调 → 转为浅色背景（用于展开卡片文字区）
+  //  从图片提取主色调 → 转为 pin 色板
   // ============================================================
 
   function extractCardBg(src, callback) {
@@ -18,14 +18,14 @@
       for (let i = 0; i < d.length; i += 4) {
         r += d[i]; g += d[i + 1]; b += d[i + 2];
       }
-      callback(toCardBg(r / n, g / n, b / n));
+      callback(toCardPalette(r / n, g / n, b / n));
     };
     img.onerror = () => callback(null);
     img.src = src;
   }
 
-  // 把 RGB 均色转为极浅的同色系背景（保留色相，亮度拉到 94%，饱和度压低）
-  function toCardBg(r, g, b) {
+  // 把 RGB 均色转为同色系色板：浅背景 + 边框/尖角强调色
+  function toCardPalette(r, g, b) {
     r /= 255; g /= 255; b /= 255;
     const max = Math.max(r, g, b), min = Math.min(r, g, b), d = max - min;
     let h = 0, s = 0;
@@ -40,8 +40,12 @@
       h /= 6;
     }
     const hDeg = Math.round(h * 360);
-    const sPct = Math.round(Math.min(s, 0.45) * 100);
-    return `hsl(${hDeg}, ${sPct}%, 94%)`;
+    const textSPct = Math.round(Math.min(s, 0.45) * 100);
+    const textBg = `hsl(${hDeg}, ${textSPct}%, 94%)`;
+    return {
+      textBg,
+      frame: textBg,
+    };
   }
 
   // ============================================================
@@ -270,14 +274,15 @@
         const icon = L.divIcon({
           className: '',
           html: `<div class="city-pin" style="animation-delay:${delay}s">
-            <div class="pin-expanded">
-              <div class="pin-expanded-img-wrap">
-                <div class="pin-expanded-media" style="background-image:url('${photo.src}')"></div>
-                ${photo.date ? `<span class="pin-expanded-date">${photo.date}</span>` : ''}
+            <div class="city-card">
+              <div class="city-card-content">
+                <div class="pin-expanded-img-wrap">
+                  <div class="pin-expanded-media" style="background-image:url('${photo.src}')"></div>
+                  ${photo.date ? `<span class="pin-expanded-date">${photo.date}</span>` : ''}
+                </div>
+                ${photo.text ? `<p class="pin-expanded-text">${photo.text}</p>` : ''}
               </div>
-              ${photo.text ? `<p class="pin-expanded-text">${photo.text}</p>` : ''}
             </div>
-            <div class="city-card" style="background-image:url('${photo.src}')"></div>
             <div class="city-pin-tail"></div>
           </div>`,
           iconSize:   [64, 78],
@@ -287,13 +292,36 @@
         const marker = L.marker([lat, lng], { icon }).addTo(map);
         cityMarkerLayers.push(marker);
 
-        // 从照片提取主色调，应用到展开卡片的文字区背景
-        extractCardBg(photo.src, (bg) => {
-          if (!bg) return;
+        const bindPinHoverLayer = () => {
           const el = marker.getElement();
           if (!el) return;
+          const base = el.style.zIndex;
+          if (el.dataset.hoverLayerBound) return;
+          el.dataset.hoverLayerBound = '1';
+
+          el.addEventListener('mouseenter', () => {
+            el.classList.add('pin-hover-layer');
+            el.style.zIndex = 10000;
+            marker.setZIndexOffset(10000);
+          });
+          el.addEventListener('mouseleave', () => {
+            el.classList.remove('pin-hover-layer');
+            el.style.zIndex = base;
+            marker.setZIndexOffset(0);
+          });
+        };
+
+        bindPinHoverLayer();
+        marker.on('add', bindPinHoverLayer);
+
+        // 从照片提取主色调，应用到 pin 边框、尖角和展开文字区背景
+        extractCardBg(photo.src, (palette) => {
+          if (!palette) return;
+          const el = marker.getElement();
+          if (!el) return;
+          el.style.setProperty('--pin-frame', palette.frame);
           const textArea = el.querySelector('.pin-expanded-text');
-          if (textArea) textArea.style.background = bg;
+          if (textArea) textArea.style.background = palette.textBg;
         });
       });
     });

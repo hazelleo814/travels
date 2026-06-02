@@ -3,61 +3,48 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Hazel & Leo 的旅行时光</title>
+  <title>旅行地图 — Hazel &amp; Leo</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;1,400&family=Noto+Sans+SC:wght@300;400;500&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="css/main.css">
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <link rel="stylesheet" href="css/map.css">
 </head>
 <body>
 
-  <!-- 背景渐变层 (两层交替淡入淡出) -->
-  <div class="bg-stage">
-    <div class="bg-layer" id="bg-a"></div>
-    <div class="bg-layer" id="bg-b"></div>
-    <div class="bg-vignette"></div>
+  <!-- 顶部导航 -->
+  <nav class="map-nav">
+    <a href="timeline.html" class="back-btn">
+      <span class="back-icon">←</span>
+      <span>时光轴</span>
+    </a>
+    <div class="nav-center">
+      <span class="nav-title">Hazel & Leo 的旅行地图</span>
+    </div>
+    <div class="nav-breadcrumb" id="nav-breadcrumb">
+      <span class="breadcrumb-item active" id="crumb-asia" data-level="asia">亚洲</span>
+    </div>
+  </nav>
+
+  <!-- 地图容器 -->
+  <div id="map"></div>
+
+<!-- 左下角统计 -->
+  <div class="map-stats">
+    <div class="stat-item">
+      <span class="stat-num">2</span>
+      <span class="stat-label">个国家</span>
+    </div>
+    <div class="stat-divider"></div>
+    <div class="stat-item">
+      <span class="stat-num">6</span>
+      <span class="stat-label">个地方</span>
+    </div>
   </div>
 
-  <!-- 顶部标题 -->
-  <header class="site-header">
-    <h1 class="site-title">Hazel & Leo 的旅行时光</h1>
-    <p class="site-subtitle">记录每一次出发，珍藏每一段回忆</p>
-  </header>
-
-  <!-- Cover Flow 时间轴 -->
-  <main class="timeline-stage">
-    <div class="timeline-track" id="timeline-track"></div>
-  </main>
-
-  <!-- 右侧导航点 -->
-  <div class="nav-rail">
-    <div class="nav-dots" id="nav-dots"></div>
-  </div>
-
-  <!-- 地图入口按钮 -->
-  <a href="map.html" class="map-entry-btn" title="查看旅行地图">
-    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-      <polygon points="3 6 9 3 15 6 21 3 21 18 15 21 9 18 3 21"/>
-      <line x1="9" y1="3" x2="9" y2="18"/>
-      <line x1="15" y1="6" x2="15" y2="21"/>
-    </svg>
-    <span>地图</span>
-  </a>
-
-  <!-- 左下角计数 -->
-  <div class="trip-count">
-    <span class="count-num" id="count-current">01</span>
-    <span class="count-sep"> / </span>
-    <span class="count-num count-total" id="count-total">06</span>
-  </div>
-
-  <!-- 滚动提示 (首次显示) -->
-  <div class="scroll-hint" id="scroll-hint">
-    <div class="hint-text">滚动探索记忆</div>
-    <div class="hint-icon">↕</div>
-  </div>
-
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
   <script src="data/trips.js"></script>
-  <script src="js/timeline.js"></script>
+  <script src="data/locations.js"></script>
+  <script src="js/map-page.js"></script>
 </body>
 </html>

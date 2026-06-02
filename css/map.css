@@ -106,6 +106,10 @@ html, body {
   overflow: visible !important;
 }
 
+.leaflet-marker-icon.pin-hover-layer {
+  z-index: 10000 !important;
+}
+
 /* Leaflet 控件 */
 .leaflet-control-zoom {
   border: none !important;
@@ -209,37 +213,71 @@ html, body {
 .city-pin {
   position: relative;
   cursor: pointer;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
+  width: 58px;
+  height: 66px;
   animation: markerIn 0.4s var(--ease-main) both;
 }
 
 .city-card {
-  width: 58px; height: 58px;
+  position: absolute;
+  left: 50%;
+  bottom: 8px;
+  width: 58px;
+  max-height: 58px;
   border-radius: 12px;
-  border: 2.5px solid #fff;
-  box-shadow: 0 4px 14px rgba(0,0,0,0.22), 0 1px 4px rgba(0,0,0,0.10);
-  background-size: cover;
-  background-position: center;
-  transition: transform 0.22s var(--ease-main), box-shadow 0.22s ease;
+  border: 2.5px solid var(--pin-frame, #fff);
+  overflow: hidden;
+  background: var(--surface);
+  box-shadow:
+    0 4px 14px rgba(0,0,0,0.22),
+    0 1px 4px rgba(0,0,0,0.10);
+  transform: translateX(-50%);
+  transform-origin: bottom center;
+  transition:
+    width 0.26s var(--ease-main),
+    max-height 0.30s var(--ease-main),
+    border-radius 0.24s var(--ease-main),
+    box-shadow 0.22s ease,
+    transform 0.22s var(--ease-main);
 }
 .city-pin:hover .city-card {
-  transform: translateY(-3px) scale(1.08);
-  box-shadow: 0 10px 26px rgba(0,0,0,0.28), 0 3px 8px rgba(0,0,0,0.14);
+  width: min(var(--pin-expanded-w), calc(100vw - 32px));
+  max-height: 430px;
+  border-radius: 14px;
+  box-shadow:
+    0 12px 40px rgba(0, 0, 0, 0.22),
+    0 3px 10px rgba(0, 0, 0, 0.12),
+    0 0 0 1px var(--surface-border);
+  transform: translateX(-50%) translateY(-3px);
+}
+
+.city-card-content {
+  position: relative;
+  left: 50%;
+  width: 58px;
+  transform: translateX(-50%);
+  transition: width 0.26s var(--ease-main);
+}
+
+.city-pin:hover .city-card-content {
+  width: min(var(--pin-expanded-w), calc(100vw - 32px));
 }
 
 .city-pin-tail {
+  position: absolute;
+  left: 50%;
+  bottom: 0;
   width: 0; height: 0;
   border-left: 6px solid transparent;
   border-right: 6px solid transparent;
-  border-top: 8px solid #fff;
-  margin-top: -1px;
+  border-top: 8px solid var(--pin-frame, #fff);
   filter: drop-shadow(0 2px 2px rgba(0,0,0,0.12));
-  transition: transform 0.22s var(--ease-main);
+  transform: translateX(-50%);
+  transition: transform 0.22s var(--ease-main), opacity 0.12s ease;
 }
 .city-pin:hover .city-pin-tail {
-  transform: translateY(-3px);
+  opacity: 0;
+  transform: translateX(-50%) translateY(-3px);
 }
 
 /* ================================================================
@@ -266,61 +304,23 @@ html, body {
   background: var(--surface-border); border-radius: 2px;
 }
 
-/* ================================================================
-   照片 pin 原地展开（hover 从小卡片尺寸放大）
-   ================================================================ */
-
-/* 展开层绝对定位在小卡片内部，scale 从卡片尺寸起始 */
-.pin-expanded {
-  position: absolute;
-  width: min(var(--pin-expanded-w), calc(100vw - 32px));
-  bottom: 0;
-  left: 50%;
-  background: var(--surface);
-  border-radius: 14px;
-  overflow: hidden;
-  box-shadow:
-    0 12px 40px rgba(0, 0, 0, 0.22),
-    0 3px 10px rgba(0, 0, 0, 0.12),
-    0 0 0 1px var(--surface-border);
-  z-index: 9999;
-  pointer-events: none;
-  /* scale 初始值 = 小卡片宽度 / 展开宽度 ≈ 58/260 */
-  transform: translateX(-50%) scale(0.22);
-  transform-origin: bottom center;
-  opacity: 0;
-  transition:
-    transform 0.28s var(--ease-main),
-    opacity   0.18s ease;
-}
-
-.city-pin:hover .pin-expanded {
-  transform: translateX(-50%) scale(1);
-  opacity: 1;
-  pointer-events: auto;
-}
-
-/* 展开时小卡片本身淡出，避免图片叠影 */
-.city-pin:hover .city-card {
-  opacity: 0;
-  transition: opacity 0.12s ease;
-}
-.city-pin:hover .city-pin-tail {
-  opacity: 0;
-  transition: opacity 0.12s ease;
-}
-
 .pin-expanded-media {
   display: block;
   width: 100%;
-  aspect-ratio: 4 / 3;
+  height: 58px;
   background: rgba(30, 26, 18, 0.06);
   background-size: cover;
   background-position: center;
+  transition: height 0.28s var(--ease-main);
+}
+
+.city-pin:hover .pin-expanded-media {
+  height: 210px;
 }
 
 .pin-expanded-img-wrap {
   position: relative;
+  width: 100%;
 }
 
 .pin-expanded-date {
@@ -333,15 +333,42 @@ html, body {
   color: rgba(255, 248, 235, 0.92);
   text-shadow: 0 1px 4px rgba(0, 0, 0, 0.50);
   pointer-events: none;
+  visibility: hidden;
+  opacity: 0;
+  transition:
+    visibility 0s linear 0.18s,
+    opacity 0.2s ease;
+}
+
+.city-pin:hover .pin-expanded-date {
+  visibility: visible;
+  opacity: 1;
+  transition:
+    visibility 0s linear 0s,
+    opacity 0.18s ease 0.08s;
 }
 
 .pin-expanded-text {
+  width: min(var(--pin-expanded-w), calc(100vw - 32px));
   padding: 10px 14px 13px;
   font-size: 14px;
   color: var(--text-primary);
   line-height: 1.75;
   letter-spacing: 0.03em;
   white-space: normal;
+  visibility: hidden;
+  opacity: 0;
+  transition:
+    visibility 0s linear 0.22s,
+    opacity 0.22s ease;
+}
+
+.city-pin:hover .pin-expanded-text {
+  visibility: visible;
+  opacity: 1;
+  transition:
+    visibility 0s linear 0s,
+    opacity 0.2s ease 0.12s;
 }
 
 .panel-empty {
