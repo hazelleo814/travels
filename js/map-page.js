@@ -271,7 +271,10 @@
           className: '',
           html: `<div class="city-pin" style="animation-delay:${delay}s">
             <div class="pin-expanded">
-              <div class="pin-expanded-media" style="background-image:url('${photo.src}')"></div>
+              <div class="pin-expanded-img-wrap">
+                <div class="pin-expanded-media" style="background-image:url('${photo.src}')"></div>
+                ${photo.date ? `<span class="pin-expanded-date">${photo.date}</span>` : ''}
+              </div>
               ${photo.text ? `<p class="pin-expanded-text">${photo.text}</p>` : ''}
             </div>
             <div class="city-card" style="background-image:url('${photo.src}')"></div>
